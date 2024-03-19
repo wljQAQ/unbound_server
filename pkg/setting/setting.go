@@ -29,19 +29,22 @@ func init() {
 		log.Fatalf("Fail to parse 'conf/app.ini':%v", err)
 	}
 
+	LoadBase()
+	LoadServer()
+	LoadServer()
 }
 
 func LoadBase() {
 	RunMode = Cfg.Section("").Key("RUN_MODE").MustString("debug")
 }
 
-func loadServer() {
+func LoadServer() {
 	sec, err := Cfg.GetSection("server")
 	if err != nil {
 		log.Fatalf("Fail to get section 'server': %v", err)
 	}
 
-	HTTPPort = sec.Key("HTTP_PORT").MustInt(8000)
+	HTTPPort = sec.Key("HTTP_PORT").MustInt(3000)
 
 	ReadTimeout = time.Duration(sec.Key("READ_TIMEOUT").MustInt(60)) * time.Second
 	WriteTimeout = time.Duration(sec.Key("WRITE_TIMEOUT").MustInt(60)) * time.Second
