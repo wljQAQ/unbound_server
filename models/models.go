@@ -21,8 +21,8 @@ type Model struct {
 
 func init() {
 	var (
-		err                          error
-		dbName, user, password, host string
+		err                                error
+		dbName, user, password, host, port string
 	)
 
 	sec, err := setting.Cfg.GetSection("database")
@@ -36,14 +36,19 @@ func init() {
 	user = sec.Key("USER").String()
 	password = sec.Key("PASSWORD").String()
 	host = sec.Key("HOST").String()
+	port = sec.Key("PORT").String()
 	// tablePrefix = sec.Key("TABLE_PREFIX").String()
-	// dsn := "host=localhost user=gorm password=gorm dbname=gorm port=9920 sslmode=disable TimeZone=Asia/Shanghai"
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable TimeZone=Asia/Shanghai", host, user, password, dbName)
+	// dsn := "host=localhost port=5432 user=postgres password=123456 dbname=blog sslmode=disable"
+	// dsn := "host=localhost user=postgres password=123456 dbname=blog port=5432 sslmode=disable"
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbName)
 	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {
 		log.Println(err)
 	}
+
+	//如果没有就创建这个表
+	db.AutoMigrate(&Tag{})
 
 	sqlDB, err := db.DB()
 

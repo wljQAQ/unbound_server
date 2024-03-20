@@ -1,5 +1,11 @@
 package models
 
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
+
 type Tag struct {
 	Model
 
@@ -9,8 +15,19 @@ type Tag struct {
 	State      int    `json:"state"`
 }
 
-func GetTags(maps interface{}) (tag []Tag) {
-	db.Where(maps).Find(&tag)
+func (tag *Tag) BeforeCreate(db *gorm.DB) error {
+	db.Statement.SetColumn("CreatedOn", time.Now().Unix())
+	return nil
+}
+
+func (tag *Tag) BeforeUpdate(scope *gorm.DB) error {
+	db.Statement.SetColumn("ModifiedOn", time.Now().Unix())
+
+	return nil
+}
+
+func GetTags(pageNum int, pageSize int, maps interface{}) (tag []Tag) {
+	db.Where(maps).Find(&tag).Offset(pageNum).Limit(pageSize)
 
 	return
 }
@@ -19,4 +36,25 @@ func GetTagTotal(maps interface{}) (count int64) {
 	db.Model(&Tag{}).Where(maps).Count(&count)
 
 	return
+}
+
+func ExistTagByName(name string) bool {
+	var tag Tag
+
+	db.Select("id").Where("name = ?", name).First(&tag)
+	if tag.ID > 0 {
+		return true
+	}
+
+	return false
+}
+
+func AddTag(name string, state int, createdBy string) bool {
+	db.Create(&Tag{
+		Name:      name,
+		State:     state,
+		CreatedBy: createdBy,
+	})
+
+	return true
 }
