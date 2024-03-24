@@ -50,6 +50,7 @@ func init() {
 	//如果没有就创建这个表
 	db.AutoMigrate(&Tag{})
 	db.AutoMigrate(&Article{})
+	db.AutoMigrate(&Auth{})
 
 	sqlDB, err := db.DB()
 

@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func jwt() gin.HandlerFunc {
+func Jwt() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 定义状态码和返回数据
 		var code int
@@ -30,8 +30,8 @@ func jwt() gin.HandlerFunc {
 			claims, err := util.ParseToken(token)
 			// 如果解析失败
 			if err != nil {
-				// 设置状态码为参数错误
-				code = e.INVALID_PARAMS
+				// 设置状态码为token解析错误
+				code = e.ERROR_AUTH_CHECK_TOKEN_FAIL
 				// 如果token已过期
 			} else if time.Now().After(claims.ExpiresAt.Time) {
 				// 设置状态码为token过期

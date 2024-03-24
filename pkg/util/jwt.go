@@ -1,6 +1,7 @@
 package util
 
 import (
+	"log"
 	"time"
 	"unbound/pkg/setting"
 
@@ -32,7 +33,8 @@ func GenerateToken(username, password string) (string, error) {
 	}
 
 	// 使用ES256签名算法创建tokenClaims，包含Claims信息
-	tokenClaims := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
+	tokenClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	log.Println(tokenClaims, "token")
 	// 返回tokenClaims的签名字符串
 	return tokenClaims.SignedString(jwtSecret)
 }
