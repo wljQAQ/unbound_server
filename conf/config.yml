@@ -1,0 +1,14 @@
+#按项目类别分数据库
+unbound_server:
+  port: 3000
+
+  #数据源项目
+  unbound_datasource:
+    db:
+      type: postgres
+      port: 5432
+      user: "root"
+      password: 123456
+      host: localhost
+      name: unbound_datasource
+    

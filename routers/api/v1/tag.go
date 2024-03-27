@@ -1,6 +1,8 @@
 package v1
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 	"unbound/models"
 	"unbound/pkg/e"
@@ -10,6 +12,8 @@ import (
 	"github.com/beego/beego/v2/core/validation"
 	"github.com/gin-gonic/gin"
 	"github.com/unknwon/com"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 // 获取多个文章标签
@@ -139,4 +143,62 @@ func DeleteTag(c *gin.Context) {
 		"msg":  e.GetMsg(code),
 		"data": make(map[string]string),
 	})
+}
+
+// DatabaseCredentials 存储用来连接数据库的凭证
+type DatabaseCredentials struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Host     string `json:"host"`
+	Port     string `json:"port"`
+	Database string `json:"database"`
+}
+
+func ConnectDB(c *gin.Context) {
+	var credentials DatabaseCredentials
+	if err := c.BindJSON(&credentials); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	fmt.Println("用户名:", credentials.Username)
+	db, err := connectDataBase(&credentials)
+	tableNames, err := getTableNames(db)
+	if err != nil {
+		log.Fatal("failed to get table names: ", err)
+	}
+	fmt.Println("表名称:", tableNames)
+
+	tableCount, err := getTableCount(db)
+	if err != nil {
+		log.Fatal("failed to get table count: ", err)
+	}
+	fmt.Println("表的数量:", tableCount)
+
+	c.JSON(http.StatusOK, gin.H{"tables": tableNames})
+}
+
+func connectDataBase(creds *DatabaseCredentials) (*gorm.DB, error) {
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", creds.Host, creds.Port, creds.Username, creds.Password, creds.Database)
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	return db, err
+}
+
+// 查询所有的表名
+func getTableNames(db *gorm.DB) ([]string, error) {
+	var tableNames []string
+	err := db.Raw("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'").Scan(&tableNames).Error
+	if err != nil {
+		return nil, err
+	}
+	return tableNames, nil
+}
+
+// 获取表的数量
+func getTableCount(db *gorm.DB) (int, error) {
+	var count int
+	err := db.Raw("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'").Scan(&count).Error
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
 }

@@ -1,10 +1,12 @@
 package setting
 
 import (
+	"fmt"
 	"log"
 	"time"
 
 	"github.com/go-ini/ini"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -32,6 +34,16 @@ func init() {
 	LoadBase()
 	LoadServer()
 	LoadServer()
+	viper.SetConfigName("config")
+	viper.AddConfigPath("conf/")
+
+	err2 := viper.ReadInConfig()
+	if err2 != nil {
+		panic(fmt.Errorf("fatal error config file: %w", err))
+	}
+
+	str := viper.Get("unbound_server").(map[string]interface{})
+	fmt.Println("viper", str["port"])
 }
 
 func LoadBase() {
