@@ -15,12 +15,13 @@ type DatabaseCredentials struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Host     string `json:"host"`
-	Port     string `json:"port"`
+	Port     int    `json:"port"`
 	Database string `json:"database"`
 }
 
 func ConnectDB(c *gin.Context) {
 	var credentials DatabaseCredentials
+
 	if err := c.BindJSON(&credentials); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -40,7 +41,7 @@ func ConnectDB(c *gin.Context) {
 }
 
 func connectDataBase(creds *DatabaseCredentials) (*gorm.DB, error) {
-	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", creds.Host, creds.Port, creds.Username, creds.Password, creds.Database)
+	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", creds.Host, creds.Port, creds.Username, creds.Password, creds.Database)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	return db, err
 }
