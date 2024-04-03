@@ -23,13 +23,15 @@ func ConnectDB(c *gin.Context) {
 	var credentials DatabaseCredentials
 
 	if err := c.BindJSON(&credentials); err != nil {
+		fmt.Println(err, credentials)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	fmt.Println(credentials)
 	db, err := connectDataBase(&credentials)
 	tableNames, err := getTableNames(db)
 	if err != nil {
-		log.Fatal("failed to get table names: ", err)
+		log.Fatal("failed to get table names: ", err.Error())
 	}
 
 	tableCount, err := getTableCount(db)
