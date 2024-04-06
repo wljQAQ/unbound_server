@@ -16,6 +16,8 @@ type ServerConf struct {
 		Host     string `mapstructure:"host"`
 		Name     string `mapstructure:"name"`
 	} `mapstructure:"db"`
+
+	Lang string `mapstructure:"lang"`
 }
 
 func init() {

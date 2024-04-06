@@ -3,7 +3,10 @@ unbound_server:
   db:
     type: postgres
     port: 5432
-    user: root
+    user: postgres
     password: 123456
+    # host: unbound.c410shmahqqg.ap-northeast-1.rds.amazonaws.com
     host: localhost
     name: unbound
+
+  lang: zh

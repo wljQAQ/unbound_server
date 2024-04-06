@@ -2,49 +2,63 @@ package api
 
 import (
 	"fmt"
-	"log"
-	"net/http"
+	"unbound/models"
+	"unbound/routers/response"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
+var DB *gorm.DB
+
 // DatabaseCredentials 存储用来连接数据库的凭证
 type DatabaseCredentials struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Host     string `json:"host"`
-	Port     int    `json:"port"`
-	Database string `json:"database"`
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+	Host     string `json:"host" binding:"required"`
+	Port     int    `json:"port" binding:"required"`
+	Database string `json:"database" binding:"required"`
+	Ssl      bool   `json:"ssl"`
 }
 
 func ConnectDB(c *gin.Context) {
 	var credentials DatabaseCredentials
-
-	if err := c.BindJSON(&credentials); err != nil {
-		fmt.Println(err, credentials)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := c.ShouldBindJSON(&credentials); err != nil {
+		response.ErrorValidation(c, err)
 		return
 	}
-	fmt.Println(credentials)
-	db, err := connectDataBase(&credentials)
-	tableNames, err := getTableNames(db)
+
+	_, err := connectDataBase(&credentials)
+
 	if err != nil {
-		log.Fatal("failed to get table names: ", err.Error())
+		response.Error(c, "连接数据库失败:"+err.Error())
+		return
 	}
 
-	tableCount, err := getTableCount(db)
+	response.Ok(c, nil)
+}
+
+func GetTableSchema(c *gin.Context) {
+	schema, err := models.GetTableSchema(DB)
+
 	if err != nil {
-		log.Fatal("failed to get table count: ", err)
+		response.Error(c, err.Error())
+		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"tables": tableNames, "tableCount": tableCount})
+	response.Ok(c, schema)
 }
 
 func connectDataBase(creds *DatabaseCredentials) (*gorm.DB, error) {
-	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", creds.Host, creds.Port, creds.Username, creds.Password, creds.Database)
+	sslMode := "disable"
+	if creds.Ssl {
+		sslMode = "require"
+	}
+
+	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s", creds.Host, creds.Port, creds.Username, creds.Password, creds.Database, sslMode)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	DB = db
 	return db, err
 }
 

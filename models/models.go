@@ -50,5 +50,6 @@ func init() {
 
 func getDataBaseDNS() string {
 	db := setting.Server.Db
-	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=require", db.Host, db.Port, db.User, db.Password, db.Name)
+	// return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=require", db.Host, db.Port, db.User, db.Password, db.Name)
+	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s", db.Host, db.Port, db.User, db.Password, db.Name)
 }

@@ -21,6 +21,7 @@ func InitRouter() *gin.Engine {
 	// apiv1.Use(jwt.Jwt())
 	{
 		apiv1.POST("/connectDB", api.ConnectDB)
+		apiv1.POST("/getTableInfo", api.GetTableSchema)
 	}
 
 	return r
